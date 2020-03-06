@@ -1,0 +1,273 @@
+#include <kipr/botball.h>
+//important note - adjust the left turn, light sensor should face the back, the blocks must be moved by the claw
+//check failnaught
+int l_motor = 0;
+int r_motor = 3;
+int speed = 45; //originally 50, 45 also works
+int back_speed = 30;
+int speed_slow = 0;
+int speed_veer_fast = 120;
+int speed_veer_slow = 20;
+int arm_port = 1;
+int arm_up = 950;
+int arm_higher = 1170;
+int arm_even_higher = 1230;
+int arm_down = 0;
+int arm_low = 600;
+int bottom_right = 1;
+int front_camera = 3;
+int bottom_left = 5;
+int line = 2800;
+int white = 1800;
+int grey = 2000; //originally 1500, worked with 1800
+int wall = 2370;
+int veer_faster = 60;
+int veer_slower = 25;
+//int motor_power = (0, 30); 
+int main()
+
+{
+    wait_for_light(0);
+    shut_down_in(120.0);
+    find_black_line();
+    find_white_table();
+    find_black_line();  
+    find_white_table();
+    arm_raise();
+    special_veer_right();
+    follow_line();
+    left_turn(); //it gets the wire at this point
+    backward(); //moves back to get room 
+    left_turn(); //turns again    
+    higher();
+    backward_2();
+    //even_higher();
+    //schooch();//the first washer has been scored
+    arm_lower();
+    arm_flat();
+    back_to_line();//go backward and find the grey line
+    veer_right();
+    follow_line_2();
+    find_grey_line();
+    arm_raise();
+    follow_grey_line();
+    right_turn();
+    backward(); //moves back to get room 
+    right_turn(); //turns again    
+    arm_raise_lower();
+    schooch();
+    even_higher();
+    forward_end();
+    backward_3();
+    backward();
+}
+
+void follow_line(){
+    while(analog(front_camera)<wall){ //when the front camera doesn't see a wall
+
+        if (analog(bottom_right)< white){
+            veer_right();
+            printf("veering right\n");
+        }
+        else {
+            veer_left();
+            printf("veering left\n");
+        }
+    }
+    printf("found wall\n");
+    ao();
+
+}
+
+
+void follow_grey_line(){
+    while(analog(front_camera)<wall){ //when the front camera doesn't see a wall
+
+        if (analog(bottom_left)< grey){
+            veer_right();
+            printf("veering right\n");
+        }
+        else {
+            veer_left();
+            printf("veering left\n");
+        }
+    }
+    ao();
+
+}
+
+void find_black_line(){
+    while (analog(bottom_right) < line){
+        forward();
+    }
+    ao();
+    printf("found black line \n");
+}
+void find_grey_line(){
+    while (analog(bottom_right) < grey){
+        forward();
+    }
+    ao();
+    printf("found black line \n");
+}
+
+
+void find_white_table(){
+    while (analog(bottom_right) > white){
+        forward();
+    }
+    ao();
+    printf("found white table\n");
+}
+void arm_raise(){
+    enable_servos();
+    ao();
+    set_servo_position(arm_port, arm_up);
+    printf("arm raised\n");
+    msleep(2000);
+
+}
+void higher(){
+    enable_servos();
+    ao();
+    set_servo_position(arm_port, arm_higher);
+    msleep(1200);
+    set_servo_position(arm_port, 1300);
+}
+void even_higher(){
+    enable_servos();
+    ao();
+    set_servo_position(arm_port, arm_even_higher);
+    msleep(1200);
+    set_servo_position(arm_port, 1230);
+}
+
+void half_turn(){
+    motor(l_motor, speed);
+    motor(r_motor, speed);
+    msleep(450);
+}
+
+void right_turn(){
+    motor(l_motor, speed_slow);   
+    motor(r_motor, speed); 
+    msleep(800); //originally 600
+}
+void left_turn(){
+    motor(l_motor, speed);
+    motor(r_motor, speed_slow);
+    msleep(800);
+}
+void forward(){
+    motor(l_motor, speed);
+    motor(r_motor, speed);
+
+
+}
+void backward(){
+    motor(l_motor, -back_speed);
+    motor(r_motor, -back_speed);
+    msleep(1500);
+
+}
+
+void back_to_line(){
+    while(analog(bottom_left) < grey){
+        backward();
+   
+    
+    }
+    while (analog(bottom_left) < grey){
+        stop();
+    }
+    printf("found grey line\n");
+
+
+
+}
+
+void stop(){
+    motor(l_motor, 0);
+    motor(r_motor, 0);
+}
+void veer_left(){
+    motor(l_motor, speed_veer_fast);
+    motor(r_motor, speed_veer_slow);
+}
+void veer_right(){
+    motor(l_motor, speed_veer_slow);
+    motor(r_motor, speed_veer_fast);
+}
+
+void schooch(){
+    motor(l_motor, veer_slower);
+    motor(r_motor, veer_faster);
+    msleep(700);
+}
+
+
+void follow_line_2(){
+    while(analog(front_camera)<wall){ //when the front camera doesn't see a wall
+
+        if (analog(bottom_left)< white){
+            veer_right();
+            printf("veering right\n");
+        }
+        else {
+            veer_left();
+            printf("veering left\n");
+        }
+    }
+    ao();
+
+}
+
+void arm_flat(){
+    enable_servos();
+    ao();
+    set_servo_position(arm_port, arm_down);
+    printf("wire attached\n");
+    msleep(2000);
+
+}
+void arm_lower(){
+    enable_servos();
+    ao();
+    set_servo_position(arm_port, arm_low);
+    printf("wire attached\n");
+    msleep(1500);
+
+}
+
+void special_veer_right(){
+    motor(l_motor, speed_veer_slow);
+    motor(r_motor, speed_veer_fast);
+    msleep(250);
+    printf("going to line\n");
+}
+void backward_2(){
+    motor(l_motor, -back_speed);
+    motor(r_motor, -back_speed);
+    msleep(900);
+
+}
+void forward_end(){
+    motor(l_motor, speed);
+    motor(r_motor, speed);
+    msleep(900);
+}
+void arm_raise_lower(){
+    enable_servos();
+    ao();
+    set_servo_position(arm_port, arm_up);
+    printf("arm raised\n");
+    msleep(1100);
+
+}
+void backward_3(){
+    motor(l_motor, -back_speed);
+    motor(r_motor, -back_speed);
+    msleep(1000);
+
+}
+
